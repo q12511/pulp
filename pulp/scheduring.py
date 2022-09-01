@@ -16,7 +16,7 @@ W = w_df['worker_id'].tolist()
 #print(W)
 
 # day_list
-D = [d for d in range(1, ND)]
+D = [d for d in range(1, ND+1)]
 
 # shift_list
 S = s_df['shift_sign'].tolist()
@@ -27,17 +27,42 @@ WDS = [(w,d,s) for w in W for d in D for s in S]
 # worker assign shift varliable
 x = pulp.LpVariable.dicts('x', WDS, cat='Binary')
 
-# (1) 各作業員はそれぞれの日に一つのシフトにつく
+# (0) 各作業員はそれぞれの日に一つのシフトにつく
 for w in W:
   for d in D:
-    prob += pulp.lpSum([x[w,d, s] for s in S]) == 1
+    prob += pulp.lpSum([x[w,d,s] for s in S]) == 1
 
-# (2) 朝3人　昼３人　夜３人　作り１人
+
+# (1) 各日に一人の作りを割り当てる
+#作り集合
+W_cook = [row.worker_id for row in w_df.itertuples() if row.G_flag == 1]
+W_Ncook = [row.worker_id for row in w_df.itertuples() if row.G_flag == 0]
+#print(W_cook)
+for d in D:
+  prob += pulp.lpSum([x[w,d,S[5]] for w in W_cook]) == 1
+  prob += pulp.lpSum([x[w,d,S[5]] for w in W_Ncook]) == 0
+
+# (2) 朝3人　昼３人　夜３人
+S_M = [row.shift_sign for row in s_df.itertuples() if row.morning == 1]
+S_D = [row.shift_sign for row in s_df.itertuples() if row.daytime == 1]
+S_N = [row.shift_sign for row in s_df.itertuples() if row.night == 1]
+#print(S_M)
+#print(S_D)
+#print(S_N)
+
+# (2).1 3人
+for d in D:
+  prob += pulp.lpSum([x[w,d,S[0]] + x[w,d,S[1]] for w in W]) == 3
+  prob += pulp.lpSum([x[w,d,S[1]] + x[w,d,S[2]] + x[w,d,S[4]] for w in W]) == 3
+  prob += pulp.lpSum([x[w,d,S[3]] + x[w,d,S[4]] for w in W]) == 3
 
 # (3) 5連続勤務　禁止
-
+'''
+for w in W:
+  for d in D:
+    prob += pulp.lpSum([x[w,d,s]])
 # (4) G　２連続　禁止
-
+'''
 #　求解
 status = prob.solve()
 print(('Status:', pulp.LpStatus[status]))
@@ -51,6 +76,11 @@ for j in range(6):
     print(i, end='   ')
 print()
 '''
+
+print('          ', end='')
+for d in D:
+  print(d, end='  ')
+print()
 
 for w in W:
   print('worker', w, end="  ")
