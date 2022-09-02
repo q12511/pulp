@@ -1,0 +1,8 @@
+shift_sign,morning,daytime,night,cooking
+A,1,0,0,0
+AD,1,1,0,0
+D,0,1,0,0
+B,0,0,1,0
+DB,0,1,1,0
+G,0,0,0,1
+V,0,0,0,0
