@@ -3,7 +3,7 @@ import pulp
 import pandas as pd
 
 # number of days
-ND = 7
+ND = 30
 
 w_df = pd.read_csv('worker.csv')
 s_df = pd.read_csv('shift.csv')
@@ -50,19 +50,31 @@ S_N = [row.shift_sign for row in s_df.itertuples() if row.night == 1]
 #print(S_D)
 #print(S_N)
 
-# (2).1 3人
+# (2).1 朝3人　昼３人　夜2人
 for d in D:
   prob += pulp.lpSum([x[w,d,S[0]] + x[w,d,S[1]] for w in W]) == 3
   prob += pulp.lpSum([x[w,d,S[1]] + x[w,d,S[2]] + x[w,d,S[4]] for w in W]) == 3
-  prob += pulp.lpSum([x[w,d,S[3]] + x[w,d,S[4]] for w in W]) == 3
+  prob += pulp.lpSum([x[w,d,S[3]] + x[w,d,S[4]] for w in W]) == 2
 
 # (3) 5連続勤務　禁止
-'''
 for w in W:
-  for d in D:
-    prob += pulp.lpSum([x[w,d,s]])
-# (4) G　２連続　禁止
-'''
+  for d in D[4:]:
+    prob += pulp.lpSum([x[w,d - h,s] for h in range(4 + 1) for s in S[:6]]) <= 4
+
+# (4) B は一人
+for d in D:
+  prob += pulp.lpSum([x[w,d,S[4]] for w in W]) == 1
+
+# (5) G　２連続　禁止
+for w in W:
+  for d in D[2:]:
+    prob += pulp.lpSum([x[w,d - h,S[5]] for h in range(2 + 1)]) <= 1
+
+# (6) 必ず１回は２連休
+for w in W:
+  for d in D[2:]:
+    prob += pulp.lpSum([x[w,d - h,S[6]] for h in range(2 + 1)]) >= 1
+
 #　求解
 status = prob.solve()
 print(('Status:', pulp.LpStatus[status]))
@@ -79,7 +91,10 @@ print()
 
 print('          ', end='')
 for d in D:
-  print(d, end='  ')
+  if d < 10:
+    print(d, end='  ')
+  else:
+    print(d, end=' ')
 print()
 
 for w in W:
