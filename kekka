@@ -1,0 +1,9 @@
+          1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+worker 1  A  AD AD DB V  A  A  V  G  B  AD G  V  A  G  AD V  AD V  AD GB A  V  A  V  DB G  B  DB V
+worker 2  G  A  AD GB V  AD G  AD V  G  V  A  B  B  AD V  A  G  A  DB V  DB V  G  AD B  V  AD B  V
+worker 3  AD G  V  AD GB AD DB V  A  AD AD V  V  AD AD G  AD V  AD G  V  V  AD AD G  AD V  G  AD AD
+worker 4  B  V  G  AD AD V  V  G  DB A  G  V  AD G  V  AD GB DB DB V  DB G  AD DB V  G  AD V  G  DB
+worker 5  AD AD B  V  DB G  V  A  AD AD V  B  G  DB B  V  AD AD GB V  A  AD G  V  A  A  A  AD V  G
+worker 6  DB DB A  V  AD B  AD AD V  DB B  AD AD V  A  DB V  A  V  AD AD B  B  V  B  AD B  V  A  AD
+worker 7  V  V  DB A  V  DB AD B  AD V  DB DB DB V  DB A  V  B  AD A  V  AD A  AD AD V  AD A  AD A
+worker 8  V  B  V  V  A  V  B  DB B  V  A  AD A  AD V  B  DB V  V  B  AD V  DB B  DB V  DB DB V  B
