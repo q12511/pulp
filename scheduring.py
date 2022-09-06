@@ -20,12 +20,16 @@ D = [d for d in range(1, ND+1)]
 
 # shift_list
 S = s_df['shift_sign'].tolist()
-#print(S)
+print(S)
+#print(S[6])
 
 # worker day and shift pair list
 WDS = [(w,d,s) for w in W for d in D for s in S]
 # worker assign shift varliable
 x = pulp.LpVariable.dicts('x', WDS, cat='Binary')
+
+# 連休あるかないか
+y = pulp.LpVariable.dicts('y', [(w,d) for w in W for d in D], cat='Binary')
 
 # (0) 各作業員はそれぞれの日に一つのシフトにつく
 for w in W:
@@ -39,8 +43,8 @@ W_cook = [row.worker_id for row in w_df.itertuples() if row.G_flag == 1]
 W_Ncook = [row.worker_id for row in w_df.itertuples() if row.G_flag == 0]
 #print(W_cook)
 for d in D:
-  prob += pulp.lpSum([x[w,d,S[5]] for w in W_cook]) == 1
-  prob += pulp.lpSum([x[w,d,S[5]] for w in W_Ncook]) == 0
+  prob += pulp.lpSum([x[w,d,S[5]] + x[w,d,S[6]] for w in W_cook]) == 1
+  prob += pulp.lpSum([x[w,d,S[5]] + x[w,d,S[6]] for w in W_Ncook]) == 0
 
 # (2) 朝3人　昼３人　夜３人
 S_M = [row.shift_sign for row in s_df.itertuples() if row.morning == 1]
@@ -54,27 +58,32 @@ S_N = [row.shift_sign for row in s_df.itertuples() if row.night == 1]
 for d in D:
   prob += pulp.lpSum([x[w,d,S[0]] + x[w,d,S[1]] for w in W]) == 3
   prob += pulp.lpSum([x[w,d,S[1]] + x[w,d,S[2]] + x[w,d,S[4]] for w in W]) == 3
-  prob += pulp.lpSum([x[w,d,S[3]] + x[w,d,S[4]] for w in W]) == 2
+  prob += pulp.lpSum([x[w,d,S[3]] + x[w,d,S[4]] + x[w,d,S[6]] for w in W]) == 2
 
 # (3) 5連続勤務　禁止
 for w in W:
   for d in D[4:]:
-    prob += pulp.lpSum([x[w,d - h,s] for h in range(4 + 1) for s in S[:6]]) <= 4
+    prob += pulp.lpSum([x[w,d - h,s] for h in range(4 + 1) for s in S[:7]]) <= 4
 
 # (4) B は一人
 for d in D:
   prob += pulp.lpSum([x[w,d,S[4]] for w in W]) == 1
 
 # (5) G　２連続　禁止
-for w in W:
+for w in W_cook:
   for d in D[2:]:
-    prob += pulp.lpSum([x[w,d - h,S[5]] for h in range(2 + 1)]) <= 1
+    prob += pulp.lpSum([x[w,d - h,S[5]] + x[w,d - h,S[6]] for h in range(2 + 1)]) <= 1
 
-# (6) 必ず１回は２連休
+# (6) GB は一回まで
+for w in W_cook:
+  prob += pulp.lpSum([x[w,d,S[6]] for d in D]) <= 1
+'''
+# (7) 必ず１回は２連休
 for w in W:
-  for d in D[2:]:
-    prob += pulp.lpSum([x[w,d - h,S[6]] for h in range(2 + 1)]) >= 1
-
+  for d in D[:-2]:
+  #prob += pulp.lpSum([y[w,d]]) >= 0
+    prob += pulp.lpDot(x[w,d,S[7]],x[w,d+1,S[7]]) >= 1
+'''
 #　求解
 status = prob.solve()
 print(('Status:', pulp.LpStatus[status]))
@@ -116,6 +125,8 @@ for w in W:
         if i == 5:
           print("G", end='  ')
         if i == 6:
+          print("GB", end=' ')
+        if i == 7:
           print("V", end='  ')
         else:
           #print(i, end=' ')
