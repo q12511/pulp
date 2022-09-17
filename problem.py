@@ -2,7 +2,7 @@
 import pulp
 import pandas as pd
 
-class ShiftScheduring():
+class Scheduring():
   def __init__(self, w_df, s_df, wish_df, name='ShiftProblem'):
     self.w_df = w_df
     self.s_df = s_df
@@ -168,7 +168,7 @@ if __name__ == '__main__':
   s_df = pd.read_csv('shift.csv')
   wish_df = pd.read_csv('wish.csv', index_col=0)
 
-  prob = ShiftScheduring(w_df, s_df, wish_df)
+  prob = Scheduring(w_df, s_df, wish_df)
 
   solution_df = prob.solve()
 
